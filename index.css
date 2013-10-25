@@ -1,0 +1,10 @@
+.content {width:300px;height:400px;background: #999;overflow: hidden;margin: 100px auto;}
+.img {transition: transform 100ms;-webkit-transition: -webkit-transform 100ms;}
+.ani {transition: all 50ms linear;-webkit-transition: all 50ms linear;}
+
+.btns {text-align:center;}
+button,
+.btn {overflow: visible;_overflow-y: hidden;width: auto;padding: 0;-moz-box-sizing: content-box;box-sizing: content-box;text-indent: 0;outline: 0;cursor: pointer;border: 0;background: none;}
+.btn {position:relative;display: inline-block;min-width:32px;_width:32px;height:30px;line-height:30px;padding:0 11px;border:1px solid #c6c6c6;font-size: 12px;text-align: center;vertical-align: middle;white-space:nowrap;background:url(096.png) repeat-x;color:#848484;cursor: pointer;border-radius:3px;box-shadow:0 1px 0 rgba(0,0,0,.03)}
+.btn:hover {border-color:#BCD1BA;text-decoration:none;background-position:0 -50px}
+.btn:active {border-color:#c6c6c6;background-position:0 -100px}

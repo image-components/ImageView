@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>test</title>
+	<script type="text/javascript" src="ImageView.js"></script>
+	<link rel="stylesheet" type="text/css" href="index.css">
+</head>
+<body>
+	<div class="content">
+		<img src="11.jpg" class="img">
+	</div>
+	<div class="btns">
+		<button class="btn scaleL">放大</button>
+		<button class="btn scaleS">缩小</button>
+		<button class="btn rotateL">向左旋转</button>
+		<button class="btn rotateR">向右旋转</button>
+	</div>
+	<script type="text/javascript">
+	(function() {
+		var imageview = new ImageView(document.getElementsByTagName('img')[0], {
+			movingCheck: false, // 可选， 当移动的时候，是否检查边界，达到的效果就是当到边界的时候，
+			                    // 可不可以继续拖拽等效果 实验下就明白了 默认true
+			scaleNum: 1 // 可选，缩放比例 当进行缩放时 scale 时的比例 默认2
+		});
+		var rotateNum = 0;
+		var ctlMap = {
+			scaleL: function() {
+				imageview.scale(0.1);
+			},
+			scaleS: function() {
+				imageview.scale(-0.1);
+			},
+			rotateL: function() {
+				imageview.rotate(rotateNum -= 90);
+			},
+			rotateR: function() {
+				imageview.rotate(rotateNum += 90);
+			}
+		};
+		document.getElementsByClassName('btns')[0].onclick = function(e) {
+			var target = e.target;
+			if (target.tagName === 'BUTTON') {
+				ctlMap[target.className.replace(/^btn\s+/, '')]();
+			}
+		}
+	})()
+	</script>
+</body>
+</html>
