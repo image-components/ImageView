@@ -98,7 +98,7 @@
     this.options.scaleNum = parseFloat(this.options.scaleNum) || 2;
     if (typeof this.options.movingCheck === 'undefined') this.options.movingCheck = true;
     this.options.movingCheck = !!this.options.movingCheck;
-    this.options.shiftWheelZoom = !!this.options.movingCheck;
+    this.options.shiftWheelZoom = !!this.options.shiftWheelZoom;
     newImg.src = this.img.src;
     if (!newImg.complete) {
       newImg.onload = newImg.onerror = function() {
