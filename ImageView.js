@@ -98,6 +98,7 @@
     this.options.scaleNum = parseFloat(this.options.scaleNum) || 2;
     if (typeof this.options.movingCheck === 'undefined') this.options.movingCheck = true;
     this.options.movingCheck = !!this.options.movingCheck;
+    this.options.shiftWheelZoom = !!this.options.movingCheck;
     newImg.src = this.img.src;
     if (!newImg.complete) {
       newImg.onload = newImg.onerror = function() {
@@ -279,7 +280,7 @@
     },
 
     mousewheel: function(e) {
-      if (!e.shiftKey) return;
+      if (this.options.shiftWheelZoom && !e.shiftKey) return;
       var delta;
       if (e.wheelDelta) {
         delta = e.wheelDelta / 120;
