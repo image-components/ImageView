@@ -3,6 +3,8 @@ ImageView
 
 ### 图片查看 支持 放大 缩小 平移 旋转等（注：旋转需要浏览器支持transform）
 
+无任何依赖。
+
 参见index.html实例
 
 api：
