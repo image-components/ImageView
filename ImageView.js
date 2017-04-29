@@ -1,95 +1,98 @@
-;(function() {
-	'use strict'
-	var win = window,
-			doc = win.document;
+;((() => {
+    'use strict'
+    var win = window;
+    var doc = win.document;
+    var w3c = window.dispatchEvent;
 
-	var w3c = window.dispatchEvent,
-			fixEvent = function(event) {
-				var target = event.target = event.srcElement;
-				event.which = event.charCode != null ? event.charCode : event.keyCode;
-				if (/mouse|click/.test(event.type)) {
-					var doc = target.ownerDocument || doc
-					var box = doc.compatMode === 'BackCompat' ? doc.body : doc.documentElement
-					event.pageX = event.clientX + (box.scrollLeft >> 0) - (box.clientLeft >> 0)
-					event.pageY = event.clientY + (box.scrollTop >> 0) - (box.clientTop >> 0)
-				}
-				event.preventDefault = function() {
-					event.returnValue = false
-				}
-				event.stopPropagation = function() {
-					event.cancelBubble = true
-				}
-				return event
-			},
-			bind = function(ele, name, func, bubble) {
-				function callback(e) {
-					var ex = e.target ? e : fixEvent(e || window.event)
-					var ret = func.call(ele, e)
-					if (ret === false) {
-						ex.preventDefault()
-						ex.stopPropagation()
-					}
-					return ret
-				}
-				if (w3c) {
-					ele.addEventListener(name, callback, !!bubble)
-				} else {
-					try {
-						ele.attachEvent('on' + name, callback)
-					} catch (e) {}
-				}
-				return callback;
-			},
-			unbind = w3c ? function(ele, name, func, bubble) {
-				ele.removeEventListener(name, func, !!bubble)
-			} : function(ele, name, func, bubble) {
-				try {
-					ele.detachEvent('on' + name, func)
-				} catch(e) {}
-			},
-			transforms = ['transform', '-webkit-transform', '-moz-transform', '-o-transform', '-ms-transform'],
-			transitions = ['transition', '-webkit-transition', '-moz-transition', '-o-transition', '-ms-transition'];
+    var fixEvent = event => {
+        var target = event.target = event.srcElement;
+        event.which = event.charCode != null ? event.charCode : event.keyCode;
+        if (/mouse|click/.test(event.type)) {
+            var doc = target.ownerDocument || doc
+            var box = doc.compatMode === 'BackCompat' ? doc.body : doc.documentElement
+            event.pageX = event.clientX + (box.scrollLeft >> 0) - (box.clientLeft >> 0)
+            event.pageY = event.clientY + (box.scrollTop >> 0) - (box.clientTop >> 0)
+        }
+        event.preventDefault = () => {
+            event.returnValue = false
+        }
+        event.stopPropagation = () => {
+            event.cancelBubble = true
+        }
+        return event
+    };
 
-		var EVENT_OBJ = {};
+    var bind = (ele, name, func, bubble) => {
+        function callback(e) {
+            var ex = e.target ? e : fixEvent(e || window.event)
+            var ret = func.call(ele, e)
+            if (ret === false) {
+                ex.preventDefault()
+                ex.stopPropagation()
+            }
+            return ret
+        }
+        if (w3c) {
+            ele.addEventListener(name, callback, !!bubble)
+        } else {
+            try {
+                ele.attachEvent('on' + name, callback)
+            } catch (e) {}
+        }
+        return callback;
+    };
 
-		var EVENT = {
-			on: function(ele, name, func, bubble) {
-				return bind(ele, name, func, bubble)
-			},
+    var unbind = w3c ? (ele, name, func, bubble) => {
+        ele.removeEventListener(name, func, !!bubble)
+    } : (ele, name, func, bubble) => {
+        try {
+            ele.detachEvent('on' + name, func)
+        } catch(e) {}
+    };
 
-			off: function(ele, name, func, bubble) {
-				unbind(ele, name, func, bubble)
-			},
+    var transforms = ['transform', '-webkit-transform', '-moz-transform', '-o-transform', '-ms-transform'];
+    var transitions = ['transition', '-webkit-transition', '-moz-transition', '-o-transition', '-ms-transition'];
 
-			stop: function(e) {
-				e.stopPropagation();
-				e.preventDefault();
-			}
+    var EVENT_OBJ = {};
 
-		};
+    var EVENT = {
+        on(ele, name, func, bubble) {
+            return bind(ele, name, func, bubble)
+        },
 
-		if (!bind.bind) {
-			Function.prototype.bind = function(context) {
-				var that = this;
-				var args = Array.prototype.slice.call(arguments, 1);
-				return function() {
-					var ars = args.concat();
-					ars.push.apply(ars, arguments)
-					return that.apply(context, ars);
-				};
-			};
-		}
+        off(ele, name, func, bubble) {
+            unbind(ele, name, func, bubble)
+        },
 
-		function getParentElement(ele) {
-			if (ele.parentElement) return ele.parentElement;
-			var ret = ele.parentNode;
-			while (ret.nodeType !== 1) {
-				ret = ret.parentNode;
-			}
-			return ret;
-		}
+        stop(e) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
 
-	function ImageView(img, options) {
+    };
+
+    if (!bind.bind) {
+        Function.prototype.bind = function(context) {
+            var that = this;
+            var args = Array.prototype.slice.call(arguments, 1);
+            return function() {
+                var ars = args.concat();
+                ars.push(...arguments)
+                return that.apply(context, ars);
+            };
+        };
+    }
+
+    function getParentElement(ele) {
+        if (ele.parentElement) return ele.parentElement;
+        var ret = ele.parentNode;
+        while (ret.nodeType !== 1) {
+            ret = ret.parentNode;
+        }
+        return ret;
+    }
+
+    function ImageView(img, options) {
 		var that = this;
 		if (!img) return;
 		var newImg = new Image();
@@ -106,7 +109,7 @@
 		this.error = false;
 		this.newImg = newImg;
 		if (!newImg.complete) {
-			newImg.onload = function() {
+			newImg.onload = () => {
 				if (loaded) return;
 				loaded = true;
 				that.img.style.display = 'inline-block';
@@ -114,7 +117,7 @@
 				that.init();
 				that.bindEvts();
 			};
-			newImg.onerror = function() {
+			newImg.onerror = () => {
 				if (loaded) return;
 				loaded = true;
 				// 出错时啥也不干了
@@ -123,7 +126,7 @@
 				that.init();
 				that.img.style.visibility = 'visible';
 			};
-			var interval = setInterval(function() {
+			var interval = setInterval(() => {
 				if (newImg.complete) {
 					clearInterval(interval);
 					newImg.onload();
@@ -131,7 +134,7 @@
 			}, 100)
 		} else {
 			loaded = true;
-			setTimeout(function() {
+			setTimeout(() => {
 				that.img.style.display = 'inline-block';
 				that.container = getParentElement(img);
 				that.init();
@@ -140,66 +143,68 @@
 		}
 	}
 
-	ImageView.prototype = {
+    ImageView.prototype = {
 
 		constructor: ImageView,
 
-		destroy: function() {
-			this.error = true;
-			this.newImg.onload = this.onerror = function() {};
-			this.newImg = null;
-			EVENT.off(this.img, 'mousedown', this.__mosuedown);
-			this.container && EVENT.off(this.container, this.wheelType, this.__mosuewheel);
-			this.container && this.container.removeChild(this.div);
-			if (!this.imgStyle) return;
-			this.imgStyle.display = '';
-			this.imgStyle.position = '';
-			this.imgStyle.width = '';
-			this.imgStyle.height = '';
-			this.imgStyle.maxWidth = '';
-			this.imgStyle.maxHeight = '';
-			this.imgStyle.visibility = 'hidden';
-			var i = 0, len;
-			for (i = 0, len = transitions.length; i < len; i++) {
+		destroy() {
+            this.error = true;
+            this.newImg.onload = this.onerror = () => {};
+            this.newImg = null;
+            EVENT.off(this.img, 'mousedown', this.__mosuedown);
+            this.container && EVENT.off(this.container, this.wheelType, this.__mosuewheel);
+            this.container && this.container.removeChild(this.div);
+            if (!this.imgStyle) return;
+            this.imgStyle.display = '';
+            this.imgStyle.position = '';
+            this.imgStyle.width = '';
+            this.imgStyle.height = '';
+            this.imgStyle.maxWidth = '';
+            this.imgStyle.maxHeight = '';
+            this.imgStyle.visibility = 'hidden';
+            var i = 0;
+            var len;
+            for (i = 0, len = transitions.length; i < len; i++) {
 				this.imgStyle[transitions[i]] = 'none';
 			}
-			for (i = 0, len = transforms.length; i < len; i++) {
+            for (i = 0, len = transforms.length; i < len; i++) {
 				this.imgStyle[transforms[i]] = '';
 			}
-		},
+        },
 
-		init: function() {
-			if (this.options.onload) this.options.onload();
-			if (this.error) return;
-			this.initPos = {
+		init() {
+            if (this.options.onload) this.options.onload();
+            if (this.error) return;
+            this.initPos = {
 				x: 0,
 				y: 0
 			};
-			// this.lastW = this.w;
-			// this.lastH = this.h;
-			this.zoom = 100;
-			this.deg = 0;
-			this.reverse = 0;
-			this.getRes();
-			this.posi = {};
-			this.c = {};
-			this.maxBounds = {};
-			this.imgStyle = this.img.style;
-			if (!this.div) {
+            // this.lastW = this.w;
+            // this.lastH = this.h;
+            this.zoom = 100;
+            this.deg = 0;
+            this.reverse = 0;
+            this.getRes();
+            this.posi = {};
+            this.c = {};
+            this.maxBounds = {};
+            this.imgStyle = this.img.style;
+            if (!this.div) {
 				this.div = doc.createElement('div');
 				this.divStyle = this.div.style;
 				this.initStyles();
 				this.container.appendChild(this.div);
 			}
-			var i = 0, len;
-			for (i = 0, len = transitions.length; i < len; i++) {
+            var i = 0;
+            var len;
+            for (i = 0, len = transitions.length; i < len; i++) {
 				this.imgStyle[transitions[i]] = '';
 			}
-			this.resized();
-			this.imgStyle.visibility = 'visible';
-		},
+            this.resized();
+            this.imgStyle.visibility = 'visible';
+        },
 
-		resized: function() {
+		resized() {
 			this.imgStyle.width = '';
 			this.imgStyle.height = '';
 			this.imgStyle.maxWidth = 'none';
@@ -216,24 +221,25 @@
 			this.checkSize();
 		},
 
-		getRes: function() {
+		getRes() {
 			this.res = 1 / (this.zoom / 100);
 			return this.res;
 		},
 
-		getResFromZoom: function(zoom) {
+		getResFromZoom(zoom) {
 			return (1 / (zoom / 100));
 		},
 
-		checkSize: function() {
-			var per, per1;
-			if (this.w > this.maxW) {
+		checkSize() {
+            var per;
+            var per1;
+            if (this.w > this.maxW) {
 				per = this.maxW / this.w;
 			}
-			if (this.h > this.maxH) {
+            if (this.h > this.maxH) {
 				per1 = this.maxH / this.h;
 			}
-			if (per && per1) {
+            if (per && per1) {
 				per = Math.min(per, per1);
 				this.scale(per - 1);
 			} else if (per && !per1) {
@@ -241,9 +247,9 @@
 			} else if (!per && per1) {
 				this.scale(per1 - 1);
 			}
-		},
+        },
 
-		initStyles: function() {
+		initStyles() {
 			this.container.style.position = 'relative';
 			this.container.style.overflow = 'hidden';
 			this.imgStyle.position = 'absolute';
@@ -252,7 +258,7 @@
 			this.divStyle.zIndex = zIndex - 100;
 		},
 
-		scale: function(scale, poi) {
+		scale(scale, poi) {
 			if (this.error) return;
 			var w = this.w;
 			var h = this.h;
@@ -290,7 +296,7 @@
 			this.checkBoundary(true);
 		},
 
-		computeScale: function(w) {
+		computeScale(w) {
 			w || (w = this.w)
 			var ow = this.ow;
 			if (this.reverse) {
@@ -302,7 +308,7 @@
 			}
 		},
 
-		bindEvts: function() {
+		bindEvts() {
 			if (this.error) return;
 			this.__mosuedown = EVENT.on(this.img, 'mousedown', this.mousedown.bind(this));
 			var wheelType = 'mousewheel';
@@ -314,7 +320,7 @@
 			this.__mosuewheel = EVENT.on(this.container, wheelType, this.mousewheel.bind(this));
 		},
 
-		mousewheel: function(e) {
+		mousewheel(e) {
 			if (this.options.shiftWheelZoom && !e.shiftKey) return;
 			var delta;
 			if (e.wheelDelta) {
@@ -329,53 +335,59 @@
 			EVENT.stop(e);
 		},
 
-		mousedown: function(e) {
-			var that = this,
-				startPos = {
-					x: e.pageX,
-					y: e.pageY
-				},
-				initPosi = {
-					top: this.posi.top,
-					left: this.posi.left
-				},
-				mousemove = function(e) {
-					EVENT.stop(e);
-					if (that._mouseDown && startPos) {
-						var x = e.pageX;
-									var y = e.pageY;
-									var diffX = x - startPos.x;
-									var diffY = y - startPos.y;
-									that.pos({
-							top: initPosi.top + diffY,
-							left: initPosi.left + diffX
-						});
-						if (that.options.movingCheck) {
-							that.checkBoundary(true);
-						}
-					}
-					return false;
-				},
-				mouseup = function(e) {
-					EVENT.stop(e);
-								that._mouseDown = false;
-								startPos = null;
-								ended();
-				},
-				ended = function() {
-					EVENT.off(doc, 'mousemove', _mousemove);
-					EVENT.off(doc, 'mouseup', _mouseup);
-					that.imgStyle.cursor = 'default';
-					that.checkBoundary();
-				};
-			EVENT.stop(e);
-			this._mouseDown = true;
-			this.imgStyle.cursor = 'move';
-			var _mousemove = EVENT.on(doc, 'mousemove', mousemove);
-			var _mouseup = EVENT.on(doc, 'mouseup', mouseup);
-		},
+		mousedown(e) {
+            var that = this;
 
-		checkBoundary: function(disClass) {
+            var startPos = {
+                x: e.pageX,
+                y: e.pageY
+            };
+
+            var initPosi = {
+                top: this.posi.top,
+                left: this.posi.left
+            };
+
+            var mousemove = e => {
+                EVENT.stop(e);
+                if (that._mouseDown && startPos) {
+                    var x = e.pageX;
+                                var y = e.pageY;
+                                var diffX = x - startPos.x;
+                                var diffY = y - startPos.y;
+                                that.pos({
+                        top: initPosi.top + diffY,
+                        left: initPosi.left + diffX
+                    });
+                    if (that.options.movingCheck) {
+                        that.checkBoundary(true);
+                    }
+                }
+                return false;
+            };
+
+            var mouseup = e => {
+                EVENT.stop(e);
+                            that._mouseDown = false;
+                            startPos = null;
+                            ended();
+            };
+
+            var ended = () => {
+                EVENT.off(doc, 'mousemove', _mousemove);
+                EVENT.off(doc, 'mouseup', _mouseup);
+                that.imgStyle.cursor = 'default';
+                that.checkBoundary();
+            };
+
+            EVENT.stop(e);
+            this._mouseDown = true;
+            this.imgStyle.cursor = 'move';
+            var _mousemove = EVENT.on(doc, 'mousemove', mousemove);
+            var _mouseup = EVENT.on(doc, 'mouseup', mouseup);
+        },
+
+		checkBoundary(disClass) {
 			if (this.bounds.right < this.maxBounds.right || this.bounds.left > this.maxBounds.left ||
 				this.bounds.top > this.maxBounds.top || this.bounds.bottom < this.maxBounds.bottom) {
 				// 此时 超出范围了
@@ -395,19 +407,19 @@
 				}
 				if (!disClass) {
 					this.img.className += ' ani';
-					setTimeout(function() {
+					setTimeout(() => {
 						this.img.className = this.img.className.replace(/\bani\b/g, '');
-					}.bind(this), 50)
+					}, 50)
 				}
 				this.center({
-					x: x,
-					y: y
+					x,
+					y
 				});
 			}
 
 		},
 
-		getBounds: function() {
+		getBounds() {
 			return {
 				top: this.c.y - this.h / 2,
 				right: this.c.x  + this.w / 2,
@@ -416,11 +428,11 @@
 			}
 		},
 
-		_bounds: function() {
+		_bounds() {
 			this.bounds = this.getBounds();
 		},
 
-		center: function(pos) {
+		center(pos) {
 			if (pos) {
 				if (this.w < this.maxW) {
 					pos.x = 0;
@@ -445,7 +457,7 @@
 			return this.c;
 		},
 
-		pos: function(obj) {
+		pos(obj) {
 			if (obj) {
 				this.posi = {
 					top: parseInt(obj.top) || 0,
@@ -470,14 +482,14 @@
 			return this.posi;
 		},
 
-		getPosFromPx: function(px) {
+		getPosFromPx(px) {
 			return {
 				x: px.x - this.container.offsetLeft + this.maxBounds.left,
 				y: px.y - this.container.offsetTop + this.maxBounds.top
 			}
 		},
 
-		rotate: function(deg) {
+		rotate(deg) {
 			if (this.error) return;
 			this.center({
 				x: 0,
@@ -501,7 +513,7 @@
 			});
 		},
 
-		checkReverse: function(deg) {
+		checkReverse(deg) {
 			if (deg) {
 				deg = parseInt(deg);
 				if (deg % 180 !== 0 && deg % 90 === 0) {
@@ -528,9 +540,11 @@
 			return (this.reverse = 0);
 		},
 
-		_updateDiv: function(top, left) {
-			var w, h, tmp;
-			if (this.reverse) {
+		_updateDiv(top, left) {
+            var w;
+            var h;
+            var tmp;
+            if (this.reverse) {
 				// 
 				w = this.h;
 				h = this.w;
@@ -560,10 +574,10 @@
 				this.divStyle.left = left;
 					this.divStyle.top = top;
 			}
-			this.w = w;
-			this.h = h;
-			// 宽 高 都小于
-			if (w < this.maxW && h < this.maxH) {
+            this.w = w;
+            this.h = h;
+            // 宽 高 都小于
+            if (w < this.maxW && h < this.maxH) {
 				// 不变
 				this.pos({
 					top: (this.maxH - h) / 2,
@@ -572,21 +586,21 @@
 			} else if (w < this.maxW) {
 				// 宽度小于最小宽度
 				this.pos({
-					top: top,
+					top,
 					left: (this.maxW - w) / 2
 				});
 			} else if (h < this.maxH) {
 				this.pos({
 					top: (this.maxH - h) / 2,
-					left: left
+					left
 				});
 			} else {
 				this.pos();
 				this.center();
 			}
-		},
+        },
 
-		refresh: function() {
+		refresh() {
 			this.maxBounds = {
 				top: -this.maxH / 2,
 				right: this.maxW / 2,
@@ -602,7 +616,7 @@
 
 	};
 
-	win.ImageView = ImageView;
+    win.ImageView = ImageView;
 
-	return ImageView;
-})()
+    return ImageView;
+}))()
